@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "playground"
+version = "0.1.0"
+description = "Spazio per esperimenti vari"
+authors = ["eliarizzetto <elia.rizzetto@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+sparqlwrapper = "^2.0.0"
+beautifulsoup4 = "^4.12.3"
+tqdm = "^4.66.4"
+pandas = "^2.2.2"
+matplotlib = "^3.9.0"
+plotly = "^5.22.0"
+ipykernel = "^6.29.4"
+jupyter = "^1.0.0"
+prettierfier = "^1.0.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
