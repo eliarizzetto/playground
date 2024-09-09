@@ -171,10 +171,10 @@ def count_br_ids(meta_zip_path, out_file):
             issn_count = len([i for i in ids if i.startswith('issn')])
             isbn_count = len([i for i in ids if i.startswith('isbn')])
 
-            # TODO: poi togli questo
-            if doi_count >= 30:
-                print(row)
-            # -----------|
+            # # TODO: poi togli questo
+            # if doi_count >= 30:
+            #     print(row)
+            # # -----------|
 
             if doi_count > 1:
                 res[type]['doi'][doi_count] += 1
