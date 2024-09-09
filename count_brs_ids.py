@@ -8,24 +8,41 @@ import csv
 import json
 from collections import defaultdict
 import warnings
+import tarfile
 from pprint import pprint
 
-def read_compressed_meta_dump(csv_dump_path: str):
+def read_compressed_meta_dump(archive_path: str):
     """
-    Reads the archive zipping the CSV files of OC Meta CSV dump.
-    :param csv_dump_path:
-    :return:
+    Reads the ZIP or TAR.GZ archive storing the CSV files of OC Meta CSV dump.
+    :param archive_path: the path to the archive file.
+    :return: Yields rows from the CSV files as dictionaries.
     """
-    csv.field_size_limit(131072 * 12)
-    with ZipFile(csv_dump_path) as archive:
-        for csv_file in tqdm(archive.namelist()):
-            if csv_file.endswith('.csv'):
-                logging.debug(f'Processing file {csv_file}')
-                with archive.open(csv_file, 'r') as f:
-                    reader = DictReader(TextIOWrapper(f, encoding='utf-8'), dialect='unix')
-                    for row in reader:
-                        yield row
+    csv.field_size_limit(131072 * 12)  # raise default field_size_limit for csv operations
 
+    if archive_path.endswith('.zip'):
+        with ZipFile(archive_path) as archive:
+            for csv_file in tqdm(archive.namelist()):
+                if csv_file.endswith('.csv'):
+                    logging.debug(f'Processing file {csv_file}')
+                    with archive.open(csv_file, 'r') as f:
+                        reader = DictReader(TextIOWrapper(f, encoding='utf-8'), dialect='unix')
+                        for row in reader:
+                            yield row
+
+    elif archive_path.endswith('.tar.gz'):
+        with tarfile.open(archive_path, 'r:gz') as archive:
+            print('Reading .tar file (this may take a while)...')
+            for member in tqdm(archive.getmembers()):
+                if member.isfile() and member.name.endswith('.csv'):
+                    logging.debug(f'Processing file {member.name}')
+                    f = archive.extractfile(member)
+                    if f:
+                        reader = DictReader(TextIOWrapper(f, encoding='utf-8'), dialect='unix')
+                        for row in reader:
+                            yield row
+
+    else:
+        raise ValueError("Unsupported archive format. Only .zip and .tar.gz are supported.")
 
 def default_to_regular(d):
     """
@@ -153,6 +170,11 @@ def count_br_ids(meta_zip_path, out_file):
             omid_count = len([i for i in ids if i.startswith('omid')])
             issn_count = len([i for i in ids if i.startswith('issn')])
             isbn_count = len([i for i in ids if i.startswith('isbn')])
+
+            # TODO: poi togli questo
+            if doi_count >= 30:
+                print(row)
+            # -----------|
 
             if doi_count > 1:
                 res[type]['doi'][doi_count] += 1
